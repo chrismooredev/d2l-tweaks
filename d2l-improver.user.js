@@ -2,7 +2,7 @@
 // @name         Make D2L a bit better
 // @namespace    http://tampermonkey.net/
 // @version      0.2
-// @description  Make D2L application views longer
+// @description  Add QoL changes to D2L's user interface
 // @author       https://github.com/csm123199
 // @match        https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
 // @include      https://d2l.*.edu/*
