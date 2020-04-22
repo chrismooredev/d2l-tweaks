@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Make D2L a bit better
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Make D2L application views longer
 // @author       https://github.com/csm123199
 // @match        https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
 // @include      https://d2l.*.edu/*
 // @grant        none
-// @updateUrl    none
+// @updateUrl    https://gist.github.com/csm123199/4bd7605a47ca89d65699bbbaef474c38/raw/d2l-improver.user.js
 // ==/UserScript==
 
 // D2L rest api docs
