@@ -5,7 +5,6 @@
 // @description  Add QoL changes to D2L's user interface
 // @author       https://github.com/csm123199
 // @match        https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
-// @include      https://d2l.*.edu/*
 // @grant        none
 // @updateUrl    https://gist.github.com/csm123199/4bd7605a47ca89d65699bbbaef474c38/raw/d2l-improver.user.js
 // ==/UserScript==
