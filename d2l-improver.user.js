@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Make D2L a bit better
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Add QoL changes to D2L's user interface
 // @author       https://github.com/csm123199
 // @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
