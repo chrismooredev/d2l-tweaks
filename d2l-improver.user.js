@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Make D2L a bit better
-// @namespace    http://tampermonkey.net/
-// @version      0.4
+// @namespace    https://gist.github.com/csm123199/4bd7605a47ca89d65699bbbaef474c38
+// @version      0.5
 // @description  Add QoL changes to D2L's user interface
 // @author       https://github.com/csm123199
 // @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
@@ -13,6 +13,12 @@
 // https://docs.valence.desire2learn.com/res/content.html
 
 {
+	
+	/* Config */
+	const MAKE_NATIVE_ON_LOAD = true;
+
+
+	/* Code */
 	let host = null;
 	let url = new URL(document.location);
 	if (url.protocol == 'https:' && url.host.match(/^d2l.[a-zA-Z0-9_-]+.edu/)) {
@@ -28,10 +34,11 @@
     </span>`
 	const CONTENT_TYPES = {
 		PDF: 'pdf',
+		MP4: 'mp4',
 		Word: 'msword',
 		Excel: 'msexcel',
 		WebPage: 'webpage',
-		MP4: 'mp4',
+        ExternalPage: 'extpage', // not sure what the difference is in D2L but... *shrug*?
 		Panopto: 'panopto',
 		UNKNOWN: 'unknown',
 	};
@@ -40,18 +47,38 @@
 		'Word Document': CONTENT_TYPES.Word,
 		'Excel Spreadsheet': CONTENT_TYPES.Excel,
 	}
+
+	// Types able to be directly downloaded
 	const DIRECT_FILES = [
 		CONTENT_TYPES.PDF,
 		CONTENT_TYPES.MP4,
 		CONTENT_TYPES.Word,
 		CONTENT_TYPES.Excel,
 	];
+
+	// Types that can be shown in the native iframe (even if we have to do some URL mangling to turn it into a PDF or smth)
 	const NATIVE_VIEW_COMPAT = [
 		CONTENT_TYPES.PDF,
 		CONTENT_TYPES.MP4, // have to use link from page for URL seeking
+		CONTENT_TYPES.ExternalPage,
+		CONTENT_TYPES.WebPage, // maybe?
+
+		CONTENT_TYPES.Word, // Should show PDF ( .d2l-fileviewer-pdf-pdfjs[data-location] )
+		
 	];
 
 	function getContentType() {
+        function isMP4(child) {
+            return child.attributes.getNamedItem("data-mediaplayer-src-original") != undefined;
+        }
+        function isExternalPage(_child) {
+			let topicsNewWindow = Object.values(D2L.OR.__g1).map(s => JSON.parse(s)).filter(o => o.N == 'D2L.LE.Content.Desktop.Topic.OpenInNewWindow');
+			if(topicsNewWindow.length > 1) {
+				console.warn("Not recognizing as external page because multiple URLs showed up as valid:", topicsNewWindow.map(o => o.P[0]));
+			}
+            return topicsNewWindow.length == 1 && topicsNewWindow[0].P[0];
+		}
+		
 		// Used if types can be narrowed down (eg: WebPage -> Panopto)
 		let intermediary = CONTENT_TYPES.UNKNOWN;
 
@@ -82,11 +109,9 @@
 			if (insideContent.length == 0) {
 				console.log(`Unknown page contents: 0 elements inside #ContentView`);
 			} else if (insideContent.length == 1) {
-				let child = insideContent[0];
-				let attr = null;
-				if (attr = child.attributes.getNamedItem("data-mediaplayer-src-original")) {
-					return CONTENT_TYPES.MP4;
-				}
+                let child = insideContent[0];
+                if(isMP4(child)) return CONTENT_TYPES.MP4;
+                if(isExternalPage(child)) return CONTENT_TYPES.ExternalPage;
 			} else {
 				console.log(`Unknown page contents: 2+ elements inside #ContentView`);
 			}
@@ -102,34 +127,51 @@
 		let [url, promMeta] = urlOfD2LAsset(cls, asset);
 		let handled = false;
 
-		if (type == CONTENT_TYPES.MP4) {
-			let vidplayer = document.querySelectorAll('#ContentView .vui-mediaplayer')[0];
-			let url = vidplayer.getAttribute('data-mediaplayer-src');
-			btn_useNativeIframe(url, true); // immediatly switch to native player
-			addTitleLink("Direct Link", url);
-			addTitleLink("Download", url, D2L_DOWNLOAD_ICON);
-		} else {
-			if (NATIVE_VIEW_COMPAT.includes(type)) {
-				handled = true;
-				btn_useNativeIframe(url + '?stream=true');
-				addTitleLink("Direct Link", url + '?stream=true');
+		function getUrl(type, apiUrl) {
+			if(type == CONTENT_TYPES.MP4) {
+				let vidplayer = document.querySelectorAll('#ContentView .vui-mediaplayer')[0];
+				let vidurl = vidplayer.getAttribute('data-mediaplayer-src');
+				return [vidurl, url + '?stream=false' ];
+			} else if(type == CONTENT_TYPES.ExternalPage) {
+				let url = Object.values(D2L.OR.__g1).map(s => JSON.parse(s)).filter(o => o.N == 'D2L.LE.Content.Desktop.Topic.OpenInNewWindow')[0].P[0];
+				url = new URL(url);
+				url.protocol = "https"; // otherwise iframe won't load b/c D2L is HTTPS
+				return [url, null];
+			} else if([CONTENT_TYPES.Word, CONTENT_TYPES.Excel].includes(type)) {
+				// D2L converts office documents to PDF to preview them inside D2L - use the native PDF viewer instead for interactive viewing
+				let awsPDF = document.querySelector('.d2l-fileviewer-pdf-pdfjs').getAttribute('data-location');
+				return [awsPDF, url + '?stream=false'];
+			} else {
+				return [
+					NATIVE_VIEW_COMPAT.includes(type) ? apiUrl + '?stream=true' : null,
+					DIRECT_FILES.includes(type) ? apiUrl + '?stream=false' : null,
+				]
 			}
-			if (DIRECT_FILES.includes(type)) {
-				handled = true;
-				addTitleLink("Download", url + '?stream=false', D2L_DOWNLOAD_ICON);
-			}
+		}
 
-			if (!handled) {
-				console.warn("Unhandled D2L content type from Userscript: ", type);
-				console.log("Content type asset url: ", url);
-				return promMeta.then(([typ, flname, size]) => {
-					console.log("Asset meta for url:", {
-						type: typ,
-						filename: flname,
-						size,
-					});
+		// interactive is meant for in-browser viewing
+		// downloadable is meant for files that can be downloaded by navigating to them
+		let [interactive, downloadable] = getUrl(type, url);
+		if(interactive) {
+			handled = true;
+			btn_useNativeIframe(interactive, MAKE_NATIVE_ON_LOAD);
+			addTitleLink("Direct Link", interactive);
+		}
+		if(downloadable) {
+			handled = true;
+			addTitleLink("Download", downloadable, D2L_DOWNLOAD_ICON);
+		}
+
+		if (!handled) {
+			console.warn("Unhandled D2L content type from Userscript: ", type);
+			console.log("Content type asset url: ", url);
+			return promMeta.then(([typ, flname, size]) => {
+				console.log("Asset meta for url:", {
+					type: typ,
+					filename: flname,
+					size,
 				});
-			}
+			});
 		}
 	}
 
