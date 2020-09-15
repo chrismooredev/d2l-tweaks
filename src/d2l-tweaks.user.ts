@@ -12,35 +12,51 @@
 // D2L rest api docs
 // https://docs.valence.desire2learn.com/res/content.html
 
+/// <reference path="./d2l-globals.d.ts" />
+
+//import 'd2l-globals';
+
 {
 	
 	/* Config */
 	const MAKE_NATIVE_ON_LOAD = true;
 
-
 	/* Code */
-	let host = null;
-	let url = new URL(document.location);
+	let host: string|null = null;
+	let url = new URL(document.location.toString());
 	if (url.protocol == 'https:' && url.host.match(/^d2l.[a-zA-Z0-9_-]+.edu/)) {
-		host = url.host
+		host = url.host;
 	} else {
-		throw new Error('Bad host for D2L Script (exiting): ', url.host);
+		throw new Error(`Bad host for D2L Script (exiting): '${url.host}'`);
 	}
 
-	const D2L_DOWNLOAD_ICON = `<span
-        class="d2l-icon-custom"
-        style="background-image:url('https://s.brightspace.com/lib/bsi/20.20.8-85/images/tier1/download.svg');background-position:0 0;background-repeat:no-repeat;width:18px;height:18px;background-size:18px 18px;"
-        >
-    </span>`
-	const CONTENT_TYPES = {
-		PDF: 'pdf',
-		MP4: 'mp4',
-		Word: 'msword',
-		Excel: 'msexcel',
-		WebPage: 'webpage',
-        ExternalPage: 'extpage', // not sure what the difference is in D2L but... *shrug*?
-		Panopto: 'panopto',
-		UNKNOWN: 'unknown',
+	
+	interface D2LAssetMetadata {
+		type: string,
+		filename: string|null,
+		size: number,
+	}
+
+	function create_dl_icon(): Element {
+		let i = document.createElement('span');
+		i.classList.add('d2l-icon-custom');
+		i.style.backgroundImage = "url('https://s.brightspace.com/lib/bsi/20.20.8-85/images/tier1/download.svg')";
+		i.style.backgroundPosition = "0 0";
+		i.style.backgroundRepeat = "no-repeat";
+		i.style.width = "18px";
+		i.style.height = "18px";
+		i.style.backgroundSize = "18px 18px";
+		return i;
+	}
+	enum CONTENT_TYPES {
+		PDF = 'pdf',
+		MP4 = 'mp4',
+		Word = 'msword',
+		Excel = 'msexcel',
+		WebPage = 'webpage',
+        ExternalPage = 'extpage', // not sure what the difference is in D2L but... *shrug*?
+		Panopto = 'panopto',
+		UNKNOWN = 'unknown',
 	};
 	const PAGE_TITLE_MAP = {
 		'PDF document': CONTENT_TYPES.PDF,
@@ -64,19 +80,30 @@
 		CONTENT_TYPES.WebPage, // maybe?
 
 		CONTENT_TYPES.Word, // Should show PDF ( .d2l-fileviewer-pdf-pdfjs[data-location] )
+		CONTENT_TYPES.Excel, // Should show PDF ( .d2l-fileviewer-pdf-pdfjs[data-location] )
 		
 	];
 
 	function getContentType() {
-        function isMP4(child) {
+        function isMP4(child: Element): boolean {
             return child.attributes.getNamedItem("data-mediaplayer-src-original") != undefined;
         }
-        function isExternalPage(_child) {
-			let topicsNewWindow = Object.values(D2L.OR.__g1).map(s => JSON.parse(s)).filter(o => o.N == 'D2L.LE.Content.Desktop.Topic.OpenInNewWindow');
-			if(topicsNewWindow.length > 1) {
-				console.warn("Not recognizing as external page because multiple URLs showed up as valid:", topicsNewWindow.map(o => o.P[0]));
+        function isExternalPage(): string | null {
+			let dests = Object.values(D2L.OR.__g1)
+				.map(s => JSON.parse(s))
+				.filter((ent): ent is OR_Objects.Func => {
+					return ent._type == "func" && ent.N == "D2L.LE.Content.Desktop.Topic.OpenInNewWindow" && ent.P.length == 1
+				})
+				.map(ent => ent.P[0]); // get only the destination URLs
+			
+			if(dests.length > 1) {
+				console.warn("Not recognizing as external page because multiple URLs showed up as valid:", dests);
 			}
-            return topicsNewWindow.length == 1 && topicsNewWindow[0].P[0];
+			if(dests.length == 1 && typeof dests[0] == "string") {
+				return dests[0];
+			} else {
+				return null;
+			}
 		}
 		
 		// Used if types can be narrowed down (eg: WebPage -> Panopto)
@@ -87,17 +114,14 @@
 			console.warn("Page title views: ", page_title_view);
 			throw new Error("More than one elements of class d2l-page-title-view, unable to determine page types.");
 		} else if (page_title_view.length == 1) {
-			let ptv = page_title_view[0].textContent.trim();
-			switch (ptv) {
-				case 'Web Page':
-					intermediary = CONTENT_TYPES.WebPage;
-					break;
-				default:
-					if (ptv in PAGE_TITLE_MAP) {
-						return PAGE_TITLE_MAP[ptv];
-					} else {
-						console.warn(`Unknown page title view value: ${ptv}`)
-					}
+			// null safety: elements with .d2l-page-title-view won't be the root document/doctype, so textContent won't be null
+			let ptv = page_title_view[0].textContent!.trim();
+			if(ptv == 'Web Page') {
+				intermediary = CONTENT_TYPES.WebPage;
+			} else if(ptv in PAGE_TITLE_MAP) {
+				return PAGE_TITLE_MAP[ptv as keyof typeof PAGE_TITLE_MAP];
+			} else {
+				console.warn(`Unknown page title view value: ${ptv}`)
 			}
 		}
 
@@ -111,7 +135,7 @@
 			} else if (insideContent.length == 1) {
                 let child = insideContent[0];
                 if(isMP4(child)) return CONTENT_TYPES.MP4;
-                if(isExternalPage(child)) return CONTENT_TYPES.ExternalPage;
+                if(isExternalPage()) return CONTENT_TYPES.ExternalPage;
 			} else {
 				console.log(`Unknown page contents: 2+ elements inside #ContentView`);
 			}
@@ -120,14 +144,14 @@
 		}
 		return CONTENT_TYPES.UNKNOWN;
 	}
-	function provideTypeFunctionality(type) {
+	function provideTypeFunctionality(type: CONTENT_TYPES) {
 		// add button to use native iframes for certain types
 		// add link to direct download
 		let [cls, asset] = new URL(document.URL).pathname.split('/').filter(c => Number.isFinite(Number.parseInt(c)));
 		let [url, promMeta] = urlOfD2LAsset(cls, asset);
 		let handled = false;
 
-		function getUrl(type, apiUrl) {
+		function getUrl(type: CONTENT_TYPES, apiUrl: string) {
 			if(type == CONTENT_TYPES.MP4) {
 				let vidplayer = document.querySelectorAll('#ContentView .vui-mediaplayer')[0];
 				let vidurl = vidplayer.getAttribute('data-mediaplayer-src');
@@ -139,7 +163,7 @@
 				return [url, null];
 			} else if([CONTENT_TYPES.Word, CONTENT_TYPES.Excel].includes(type)) {
 				// D2L converts office documents to PDF to preview them inside D2L - use the native PDF viewer instead for interactive viewing
-				let awsPDF = document.querySelector('.d2l-fileviewer-pdf-pdfjs').getAttribute('data-location');
+				let awsPDF = document.querySelector('.d2l-fileviewer-pdf-pdfjs')?.getAttribute('data-location');
 				return [awsPDF, url + '?stream=false'];
 			} else {
 				return [
@@ -159,23 +183,17 @@
 		}
 		if(downloadable) {
 			handled = true;
-			addTitleLink("Download", downloadable, D2L_DOWNLOAD_ICON);
+			addTitleLink("Download", downloadable, create_dl_icon());
 		}
 
 		if (!handled) {
 			console.warn("Unhandled D2L content type from Userscript: ", type);
 			console.log("Content type asset url: ", url);
-			return promMeta.then(([typ, flname, size]) => {
-				console.log("Asset meta for url:", {
-					type: typ,
-					filename: flname,
-					size,
-				});
-			});
+			return promMeta.then(meta => { console.log("Asset meta for url:", meta); });
 		}
 	}
 
-	function btn_useNativeIframe(src, now) {
+	function btn_useNativeIframe(src: string, now?: boolean) {
 		//returns promise for native iframe
 
 		function insertIframe() {
@@ -195,10 +213,10 @@
 		} else {
 			// return promise that is fulfilled with iframe
 			return new Promise((res, rej) => {
-				function btnonclick() {
+				function btnonclick(this: HTMLButtonElement) {
 					// installed as onclick handler => this = `<button>...</button>`
-					// remove ourselves since we have served our purpose
-					document.querySelector(".d2l-page-title-c .d2l-box-h").removeChild(this);
+					// remove ourselves (button) since we have served our purpose
+					this.remove();
 					res(insertIframe());
 				};
 				// Note: put button in immediatly, provide link after PDF was downloaded
@@ -209,11 +227,11 @@
 
 	// make content more than 600px high
 	function makeContentLong() {
-		let docViewer = Array.from(document.getElementsByClassName("d2l-documentViewer"));
+		let docViewer = Array.from(document.getElementsByClassName("d2l-documentViewer")) as HTMLElement[];
 		if (docViewer.length > 1) {
 			console.warn("There are multiple .d2l-documentViewer elements! Page may be extra long...", docViewer);
 		}
-
+		
 		docViewer.forEach(e => { e.style.height = '90vh' });
 		console.log("Set doc viewers' height to 90vh");
 	}
@@ -227,60 +245,58 @@
 			return true; // access denied error
 		}
 	}
-	function addTitleBtn(text, onclick) {
+
+	function getPageHeader(): Element {
 		let hdrBar = document.querySelector(".d2l-page-title-c .d2l-box-h");
+		if(!hdrBar) throw new Error("Unable to find content header bar!");
+		return hdrBar;
+	}
+	function addTitleBtn(text: string, onclick: (this: HTMLButtonElement, ev: MouseEvent) => any) {
 		let btn = document.createElement('button');
 		btn.innerText = text;
 		btn.classList.add('d2l-button');
-		btn.style['margin-right'] = '.75rem';
+		btn.style.marginRight = '.75rem';
 		btn.style.width = 'auto';
-		btn.onclick = onclick;
-		hdrBar.appendChild(btn);
+		btn.addEventListener('click', onclick);
+		getPageHeader().appendChild(btn);
 		return btn;
 	}
-	function addTitleLink(text, href, prependHTML) {
-		let hdrBar = document.querySelector(".d2l-page-title-c .d2l-box-h");
+	function addTitleLink(text: string, href: string, prependNode?: Element) {
 		let link = document.createElement('a');
 		link.innerText = text;
-		if (prependHTML) {
-			link.innerHTML = prependHTML + link.innerHTML;
-		}
+		if(prependNode) link.prepend(prependNode);
 		link.href = href;
 		link.classList.add('d2l-button');
-		link.style['margin-right'] = '.75rem';
+		link.style.marginRight = '.75rem';
 		link.style.width = 'auto';
-		hdrBar.appendChild(link);
+		getPageHeader().appendChild(link);
 		return link;
 	}
-	function replaceContent(ele) {
+	function replaceContent(ele: Element) {
 		// get content view
 		let cv = document.getElementById("ContentView");
 
-		// remove existing content
-		while (cv.lastChild) {
-			cv.removeChild(cv.lastChild)
+		if(cv == undefined) {
+			throw new Error("Unable to retrieve #ContentView");
 		}
+
+		// remove existing content
+		while (cv.lastChild) { cv.removeChild(cv.lastChild) }
 
 		cv.appendChild(ele);
 	}
-	async function D2LAssetMeta(cls, asset) {
+	async function D2LAssetMeta(cls: string, asset: string): Promise<D2LAssetMetadata> {
 		let f = await fetch(`https://${host}/d2l/api/le/1.34/${cls}/content/topics/${asset}/file`, { method: 'HEAD' });
 
 		// get mime and orig file name, if available
-		let type = f.headers.get("content-type");
-		let name;
-		try {
-			name = f.headers.get("content-disposition").match(/filename="(.+)"/)[1];
-		} catch (e) {
-			// bad match or not in content-disposition, most likely
-			name = null;
-		}
-		let size = Number.parseInt(f.headers.get("content-length"));
+		let type = f.headers.get("content-type")!;
+		let filename = f.headers.get("content-disposition")?.match(/filename="(.+)"/)?.[1] ?? null; //null if header missing, no filename, etc
+		let size = Number.parseInt(f.headers.get("content-length")!);
 
-		return [type, name, size];
+		return { type, filename, size };
 	}
 	// Returns [url: string, Promise<[content-type: string, orig-filename: string, size: number]>]
-	function urlOfD2LAsset(cls, asset) {
+	function urlOfD2LAsset(cls: string, asset: string): [string, Promise<D2LAssetMetadata>]{
 		if (!Number.isFinite(Number.parseInt(cls))) {
 			throw new Error(`D2L class ID isn't parsable to a number/ID: '${cls}'`);
 		}
@@ -301,6 +317,7 @@
 
 		if (!withinIframe()) {
 			try {
+				// @ts-ignore
 				chrome.runtime.sendMessage("llhmaciggnibnbdokidmbilklceaobae", null);
 			} catch (e) {
 				if (e.message.includes("Invalid extension id")) {
