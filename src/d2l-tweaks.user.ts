@@ -1,12 +1,12 @@
 // ==UserScript==
-// @name         Make D2L a bit better
-// @namespace    https://gist.github.com/csm123199/4bd7605a47ca89d65699bbbaef474c38
-// @version      0.5
+// @name         D2L Tweaks
+// @namespace    https://github.com/csm123199/d2l-tweaks
+// @version      0.6
 // @description  Add QoL changes to D2L's user interface
-// @author       https://github.com/csm123199
+// @author       Chris Moore
 // @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
 // @grant        none
-// @updateUrl    https://gist.github.com/csm123199/4bd7605a47ca89d65699bbbaef474c38/raw/d2l-improver.user.js
+// @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
 // ==/UserScript==
 
 // D2L rest api docs

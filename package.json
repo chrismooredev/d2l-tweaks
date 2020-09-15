@@ -4,7 +4,7 @@
   "description": "Adds a few QoL tweaks to Desire 2 Learn (D2L), an online educational teaching and organization platform.",
   "main": "d2l-tweaks.user.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "author": "csm123199",
   "license": "ISC",
