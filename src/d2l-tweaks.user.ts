@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D2L Tweaks
 // @namespace    https://github.com/csm123199/d2l-tweaks
-// @version      0.6
+// @version      0.7
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
 // @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
@@ -85,11 +85,11 @@
 	];
 
 	function getContentType() {
-        function isMP4(child: Element): boolean {
+        function isMP4(child: HTMLElement): boolean {
             return child.attributes.getNamedItem("data-mediaplayer-src-original") != undefined;
         }
-        function isExternalPage(): string | null {
-			let dests = Object.values(D2L.OR.__g1)
+        function isExternalPage(child: HTMLElement): boolean {
+			/*let dests = Object.values(D2L.OR.__g1)
 				.map(s => JSON.parse(s))
 				.filter((ent): ent is OR_Objects.Func => {
 					return ent._type == "func" && ent.N == "D2L.LE.Content.Desktop.Topic.OpenInNewWindow" && ent.P.length == 1
@@ -103,7 +103,12 @@
 				return dests[0];
 			} else {
 				return null;
+			}*/
+			let itext = child.innerText;
+			if(itext.includes("External Resource") && itext.includes("Open in New Window")) {
+				return true;
 			}
+			return false;
 		}
 		
 		// Used if types can be narrowed down (eg: WebPage -> Panopto)
@@ -129,13 +134,13 @@
 		if (content_view) {
 			console.log(content_view) // Easy reference to #ContentView
 
-			let insideContent = Array.from(content_view.children);
+			let insideContent = Array.from(content_view.children) as HTMLElement[];
 			if (insideContent.length == 0) {
 				console.log(`Unknown page contents: 0 elements inside #ContentView`);
 			} else if (insideContent.length == 1) {
                 let child = insideContent[0];
                 if(isMP4(child)) return CONTENT_TYPES.MP4;
-                if(isExternalPage()) return CONTENT_TYPES.ExternalPage;
+                if(isExternalPage(child)) return CONTENT_TYPES.ExternalPage;
 			} else {
 				console.log(`Unknown page contents: 2+ elements inside #ContentView`);
 			}
@@ -199,6 +204,18 @@
 		function insertIframe() {
 			// inject own content iframe
 			let ifram = document.createElement('iframe')
+			{
+				let url = new URL(src);
+				if(url.host.includes("youtube.com") && url.pathname == "/watch") {
+					let video_id = url.searchParams.get("v");
+					if(video_id) {
+						url.searchParams.delete("v");
+						url.pathname = "/embed/" + video_id;
+						ifram.setAttribute("allowfullscreen", "true");
+					}
+					src = url.toString();
+				}
+			}
 			ifram.src = src;
 			ifram.style.width = '100%'
 			ifram.style.height = '90vh'
