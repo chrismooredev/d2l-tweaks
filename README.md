@@ -1,12 +1,12 @@
 
 # D2L Tweaks
 
-Adds a few Quality of Life tweaks to the educational online platform Brightspace Desire2Learn (D2L).
+Adds a few Quality of Life tweaks to the online educational platform Brightspace Desire2Learn (D2L).
 
 Currently:
 * Makes the content view page larger to accomodate zoomed out pages/taller displays.
 * Replaces custom pdf/mp4 media players with the Web browser's native players
-* Uses native PDF viewer for PDF-rendered msword/excel documents.
+* Uses native PDF viewer for PDF-rendered MS Word/Excel documents.
 * Adds non-dropdown easy download buttons for compatible files.
 * Adds non-dropdown 'open in new tab' buttons for compatible files.
 * Renders "external pages" inside the content view page (embedded within an iframe) rather than just showing a link.
