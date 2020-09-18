@@ -1,11 +1,11 @@
 
 # D2L Tweaks
 
-Adds a few Quality of Life tweaks to educational online platform Desire 2 Learn (D2L).
+Adds a few Quality of Life tweaks to the educational online platform Brightspace Desire2Learn (D2L).
 
 Currently:
-* Makes the content view page larger, to accomodate zoomed out pages/taller displays.
-* Replaces custom pdf/mp4 media players with Chrome's native players
+* Makes the content view page larger to accomodate zoomed out pages/taller displays.
+* Replaces custom pdf/mp4 media players with the Web browser's native players
 * Uses native PDF viewer for PDF-rendered msword/excel documents.
 * Adds non-dropdown easy download buttons for compatible files.
 * Adds non-dropdown 'open in new tab' buttons for compatible files.
@@ -18,5 +18,7 @@ Simply open the raw version of [d2l-tweaks.user.js](https://github.com/csm123199
 
 Tampermonkey should occasionally update the script as necessary, if enabled.
 
-I recommend installing the [HTML Video Keyboard Shortcuts](https://chrome.google.com/webstore/detail/llhmaciggnibnbdokidmbilklceaobae) chrome extension.
+The same steps should work with the [Greasemonkey Firefox extension](https://www.greasespot.net/). Automatic updates seem to work with Greasemonkey, as well.
+
+I recommend installing the [HTML Video Keyboard Shortcuts](https://chrome.google.com/webstore/detail/llhmaciggnibnbdokidmbilklceaobae) Chrome extension.
 Notably, this extension adds hotkeys ( `<` and `>` ) to speed-up/slow-down the video. There are many other hotkeys listed on the extension's store page.
