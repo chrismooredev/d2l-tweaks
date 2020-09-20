@@ -360,7 +360,7 @@ class ContentPage {
 // @version      0.8
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
-// @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
+// @include      https://*.edu/d2l/*
 // @grant        none
 // @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
 // ==/UserScript==
@@ -374,8 +374,7 @@ const OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = true;
 // Ensure the page we're on is a valid D2L page.
 // If your institution doesn't match, please submit a PR adding a generic check for yours.
 let url = newURL(document.location);
-//TODO: Just check for /d2l/* path?
-if (url.protocol != 'https:' || !url.host.match(/^d2l.[a-zA-Z0-9_-]+.edu/)) {
+if (url.protocol != 'https:' || !url.host.endsWith('.edu') || !url.pathname.startsWith('/d2l')) {
     throw new Error(`Bad host for D2L Script (exiting via exception): '${url.host}'`);
 }
 const CAPABILITIES = initCapabilities();
