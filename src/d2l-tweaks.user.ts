@@ -4,7 +4,7 @@
 // @version      0.8
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
-// @include      https://d2l.*.edu/d2l/le/content/*/viewContent/*/View
+// @include      *d2l.*.edu*
 // @grant        none
 // @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
 // ==/UserScript==
