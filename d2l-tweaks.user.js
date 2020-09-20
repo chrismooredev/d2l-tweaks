@@ -447,8 +447,8 @@ function suggestOfficeEditing() {
 function chromeExtensionInstalled(id) {
     try {
         // @ts-ignore
-        if (chrome) {
-            chrome.runtime.sendMessage(id, null);
+        if (window.chrome) {
+            window.chrome.runtime.sendMessage(id, null);
             return true;
         }
     }

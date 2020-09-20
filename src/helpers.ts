@@ -49,7 +49,7 @@ function suggestOfficeEditing() {
 function chromeExtensionInstalled(id: string) {
 	try {
 		// @ts-ignore
-		if(chrome) { chrome.runtime.sendMessage(id, null); return true; }
+		if(window.chrome) { window.chrome.runtime.sendMessage(id, null); return true; }
 		
 	} catch (e) {
 		if (!e.message.includes("Invalid extension id")) { throw e; }
