@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D2L Tweaks
 // @namespace    https://github.com/csm123199/d2l-tweaks
-// @version      0.8
+// @version      0.9
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
 // @include      https://*.edu/d2l/*
@@ -16,7 +16,7 @@
 
 /* Config */
 const MAKE_NATIVE_ON_LOAD = true;
-const OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = true;
+const OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = false;
 
 /* Code */
 // Ensure the page we're on is a valid D2L page.
@@ -39,16 +39,23 @@ const CAPABILITIES: Capabilities = initCapabilities();
 		try {
 			let ptype = getPageType();
 			if(ptype.type == "content") {
+				csstweaks.content();
+
 				let contentPage = new ContentPage(ptype.class, ptype.asset);
 				console.log("Content page: ", contentPage);
 				if(MAKE_NATIVE_ON_LOAD)
 					contentPage.normalizeContent();
 				contentPage.addHeaderButtons();
+
+			} else if(ptype.type == "content_toc") {
+				csstweaks.content_toc();
+
+			} else {
+				console.warn("[D2L Tweaks] Unknown page type.");
 			}
 		} catch (e) {
 			console.error("Error occured in userscript", e);
 			//alert("Error occured in D2L bettering userscript, error in console.");
 		}
-
 	}
 })();

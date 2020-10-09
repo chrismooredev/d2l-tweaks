@@ -22,12 +22,13 @@ Adds a few Quality of Life tweaks to the online educational platform Brightspace
 3. Tampermonkey/Greasemonkey should prompt you to install the script.
 	* If enabled, the script should occasionally auto-update if new versions are released.
 
-## Recommended Chrome Extensions
-* [HTML Video Keyboard Shortcuts](https://chrome.google.com/webstore/detail/llhmaciggnibnbdokidmbilklceaobae) for shortcuts on embedded videos.
+## Recommended Extensions
+* HTML Video Keyboard Shortcuts (for [Chrome](https://chrome.google.com/webstore/detail/llhmaciggnibnbdokidmbilklceaobae)) for shortcuts on embedded videos.
 	* Notably, it adds '<' and '>' to adjust video playback speed.
-* [Office Editing for Docs, Sheets & Slides](https://chrome.google.com/webstore/detail/gbkeegbaiigmenfmjfclcdgdpimamgkj) to enable in-browser interactive office documents.
+* Office Editing for Docs, Sheets & Slides (for [Chrome](https://chrome.google.com/webstore/detail/gbkeegbaiigmenfmjfclcdgdpimamgkj)) to enable in-browser interactive office documents.
 	* If you have the extension but don't want this script to use it, find this line in the source and change it to `false`.
 		* `OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = true`
+* Markdown Here (for [Chrome](https://chrome.google.com/webstore/detail/elifhakcjgalahccnjkneoccemfahfoa), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/markdown-here/)) to enable authoring textboxes like Discussion board posts in markdown.
 
 ## Developing
 * Clone the repository

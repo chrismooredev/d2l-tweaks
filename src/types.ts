@@ -13,7 +13,7 @@ interface D2LAssetMetadata {
 	size: number,
 }
 
-type PageType = Page.Unknown | Page.Content;
+type PageType = Page.Unknown | Page.Content | Page.ContentToc;
 namespace Page {
 	export interface Unknown {
 		type: "unknown";
@@ -22,6 +22,10 @@ namespace Page {
 		type: "content";
 		class: string;
 		asset: string;
+	}
+	export interface ContentToc {
+		type: "content_toc";
+		class: string;
 	}
 }
 

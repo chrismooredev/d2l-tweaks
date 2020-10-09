@@ -37,6 +37,7 @@ class ContentPage {
 
 	protected interactiveURL: URL | null;
 	protected downloadableURL: URL | null;
+	protected officeURL: URL | null;
 
 	protected _naiveAssetMeta?: Promise<D2LAssetMetadata | null>;
 	protected replacedContent: boolean;
@@ -62,6 +63,7 @@ class ContentPage {
 		this.asset = asset;
 		this.naiveAssetURL = newURL(`/d2l/api/le/1.34/${cls}/content/topics/${asset}/file`);
 
+		this.officeURL = null;
 		this.interactiveURL = this._interactiveURL();
 		this.downloadableURL = this._downloadableURL();
 
@@ -69,6 +71,11 @@ class ContentPage {
 		this.replacedContent = false;
 
 		console.log('Header dropdown actions: ', this.headerDropdownActions());
+	}
+
+	protected get title(): string {
+		let title = this.hdrBar.querySelector('.d2l-page-title')! as HTMLElement;
+		return title.innerText;
 	}
 
 	public normalizeContent() {
@@ -90,9 +97,13 @@ class ContentPage {
 			console.log("Adding interactive buttons");
 			if(!this.replacedContent) {
 				// only show button if we haven't replaced ourselves, and we have an interactive URL to show
-				append(this.titleBtn_useNativeFrame(this.interactiveURL));
+				append(this.titleBtn_replaceContent("Use Native Viewer", this.interactiveURL));
 			}
 			append(this.titleLink("View Directly", this.interactiveURL));
+
+			if(this.officeURL) {
+				append(this.titleLink("View Interactive", this.officeURL));
+			}
 		}
 
 		if(this.downloadableURL) {
@@ -126,18 +137,18 @@ class ContentPage {
 		if(asMP4) return asMP4;
 
 		let asPDF = this.pdfUrl();
+
+		// office should only show via button
 		if(asPDF) {
-			if(asPDF[1]) return asPDF[0];
-
-			let asOffice = this.officeUrl();
-			if(asOffice) return asOffice;
-
-			 // The rendered PDF is not an office file. Fallback to browser PDF renderer.
+			if(!asPDF[1])
+				this.officeURL = this.officeUrl();
 			return asPDF[0];
 		}
 
 		let asExtPage = this.extPageUrl();
 		if(asExtPage) return asExtPage;
+
+		console.log("Page not recognized as interactive");
 
 		return null;
 	}
@@ -233,7 +244,7 @@ class ContentPage {
 		 * We could try to serve the file over `/content/enforced/${class_name}/${div[data-title]}` but there isn't an easy(?) way to get $class_name from the page (D2L JS api?)
 		 * MP4 files seem to be served from this folder, however.
 		*/
-		if(OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION && CAPABILITIES.extensions.office_viewer) {
+		if(CAPABILITIES.extensions.office_viewer) {
 			let asPDF = this.pdfUrl();
 			if(asPDF && !asPDF[1]) {
 				// if we aren't a native PDF - we might be a converted office PDF?
@@ -245,6 +256,29 @@ class ContentPage {
 				if(['doc', 'dot', 'xls', 'xlt', 'csv', 'ppt', 'pot', 'pps', 'sld'].some(s => ext?.startsWith(s))) {
 					return this.naiveFileURL(true);
 					//return newURL(`/content/enforced/`)
+
+					let title = document.createElement('title');
+					title.innerText = this.title;
+					
+					let body = document.createElement('body');
+					body.style.margin = '0';
+
+					let frame = document.createElement('iframe');
+					frame.src = this.naiveFileURL(true).toString();
+					frame.setAttribute('allowfullscreen', '1');
+					frame.style.border = '0'
+					frame.style.width = '100%'
+					frame.style.height = '100%'
+
+					let doc = `
+						<html>
+							<head>${title.outerHTML}</head>
+							<body>${frame.outerHTML}</body>
+						</html>
+					`;
+
+					let asBase64 = btoa(doc);
+					return new URL('data:text/html;base64,' + asBase64);
 				}
 			}
 		}
@@ -390,7 +424,7 @@ class ContentPage {
 	}
 
 	/** Adds a button to use a native viewer for the provided URL. Automatically removes itself from the DOM when clicked. */
-	protected titleBtn_useNativeFrame(src: URL): HTMLButtonElement {
+	protected titleBtn_replaceContent(label: string, src: URL): HTMLButtonElement {
 		const that = this;
 		function btnonclick(this: HTMLButtonElement) {
 			// installed as onclick handler => this = `<button>...</button>`
@@ -400,6 +434,6 @@ class ContentPage {
 		};
 
 		// Note: put button in immediatly, provide link after PDF was downloaded
-		return this.titleBtn("Use Native Viewer", btnonclick);
+		return this.titleBtn(label, btnonclick);
 	}
 }

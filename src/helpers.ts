@@ -112,6 +112,15 @@ function getPageType(): PageType {
 		&& components[6] == "View"
 	) {
 		return { type: "content", class: components[3], asset: components[5], };
+	} else if(
+		components.length == 5
+		&& components[0] == "d2l"
+		&& components[1] == "le"
+		&& components[2] == "content"
+		// class ID
+		&& components[4] == "Home"
+	) {
+		return { type: "content_toc", class: components[3] };
 	}
 
 	return { type: "unknown" };
