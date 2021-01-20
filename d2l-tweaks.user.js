@@ -1,5 +1,22 @@
 "use strict";
 // Maybe these will be useful for a non-content page? Keeping around for now
+// ==UserScript==
+// @name         D2L Tweaks
+// @namespace    https://github.com/csm123199/d2l-tweaks
+// @version      0.9
+// @description  Add QoL changes to D2L's user interface
+// @author       Chris Moore
+// @include      https://*.edu/d2l/*
+// @grant        none
+// @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
+// ==/UserScript==
+// D2L rest api docs
+// https://docs.valence.desire2learn.com/res/content.html
+/// <reference path="./d2l-globals.d.ts" />
+/* Config */
+const MAKE_NATIVE_ON_LOAD = true;
+const OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = false;
+/* Code */
 function urlOfD2LAsset(cls, asset) {
     if (!Number.isFinite(Number.parseInt(cls))) {
         throw new Error(`D2L class ID isn't parsable to a number/ID: '${cls}'`);
@@ -470,23 +487,6 @@ function asVisible(target, f) {
         }
     }
 }
-// ==UserScript==
-// @name         D2L Tweaks
-// @namespace    https://github.com/csm123199/d2l-tweaks
-// @version      0.9
-// @description  Add QoL changes to D2L's user interface
-// @author       Chris Moore
-// @include      https://*.edu/d2l/*
-// @grant        none
-// @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
-// ==/UserScript==
-// D2L rest api docs
-// https://docs.valence.desire2learn.com/res/content.html
-/// <reference path="./d2l-globals.d.ts" />
-/* Config */
-const MAKE_NATIVE_ON_LOAD = true;
-const OFFICE_DOCUMENTS_DIRECT_VIEW_USES_EXTENSION = false;
-/* Code */
 // Ensure the page we're on is a valid D2L page.
 // If your institution doesn't match, please submit a PR adding a generic check for yours.
 let url = newURL(document.location);
