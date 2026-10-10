@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D2L Tweaks
 // @namespace    https://github.com/chrismooredev/d2l-tweaks
-// @version      0.10
+// @version      0.11
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
 // @include      https://*.edu/d2l/*
@@ -51,6 +51,19 @@ const CAPABILITIES: Capabilities = initCapabilities();
 
 			} else if(ptype.type == "content_toc") {
 				csstweaks.content_toc();
+
+				// The TOC swaps chapters without navigation, so watch for new topic links.
+				const TOPIC_LINK_SEL = '.d2l-page-main a.d2l-link:not(.d2l-hidden, [role])[title$=" - Page"]';
+				const handled = new WeakSet<Element>();
+				const scan = () => {
+					for (const a of Array.from(document.querySelectorAll<HTMLAnchorElement>(TOPIC_LINK_SEL))) {
+						if (handled.has(a)) continue;
+						handled.add(a);
+						injectVideoIntoTopicHeading(a);
+					}
+				};
+				scan();
+				new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
 
 			} else {
 				console.warn("[D2L Tweaks] Unknown page type.");

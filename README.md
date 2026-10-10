@@ -11,8 +11,9 @@ Adds a few Quality of Life tweaks to the online educational platform Brightspace
 * If possible, replaces the title bar dropdown with direct links/buttons.
 * For external pages, renders the page inside D2L rather than simply providing a link.
 * Provides a link to go to the direct Quiz page.
-
-### Planned:
+* Injects some content (made for Panopto videos) straight into the "table of contents" for viewing directly
+ 
+## Planned:
 * Enable hovering to show images, for the Table of Contents
 
 ## Installing:
