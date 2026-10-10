@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         D2L Tweaks
-// @namespace    https://github.com/csm123199/d2l-tweaks
-// @version      0.9
+// @namespace    https://github.com/chrismooredev/d2l-tweaks
+// @version      0.10
 // @description  Add QoL changes to D2L's user interface
 // @author       Chris Moore
 // @include      https://*.edu/d2l/*
 // @grant        none
-// @updateUrl    https://raw.githubusercontent.com/csm123199/d2l-tweaks/master/d2l-tweaks.user.js
+// @updateUrl    https://raw.githubusercontent.com/chrismooredev/d2l-tweaks/master/d2l-tweaks.user.js
 // ==/UserScript==
 
 // D2L rest api docs
@@ -35,9 +35,11 @@ const CAPABILITIES: Capabilities = initCapabilities();
 	if (!withinIframe()) {
 		suggestHTML5VideoKeyboardShortcuts();
 		suggestOfficeEditing();
+		let csstweaks = getCsstweaks();
 
 		try {
 			let ptype = getPageType();
+			console.log("D2L Tweaks: found page of type ", ptype.type);
 			if(ptype.type == "content") {
 				csstweaks.content();
 

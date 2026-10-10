@@ -51,8 +51,10 @@ function chromeExtensionInstalled(id: string) {
 		// @ts-ignore
 		if(window.chrome) { window.chrome.runtime.sendMessage(id, null); return true; }
 		
-	} catch (e) {
-		if (!e.message.includes("Invalid extension id")) { throw e; }
+	} catch (e: any) {
+		// fails trivially on other browsers.
+		// just return false on error: fail-safe
+		// if (!e.message.includes("Invalid extension id")) { throw e; }
 	}
 	return false;
 }

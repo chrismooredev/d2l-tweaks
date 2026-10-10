@@ -40,38 +40,42 @@ const general_css = `
 	}
 `;
 
-const csstweaks = {
-	content: function() {
+// this is just a function so it's declared before the main code is ran
+// otherwise var/let/const would error on declaration order
+function getCsstweaks() {
+	return {
+		content: function() {
 
-	},
-	content_toc: function() {
-		// include `html` to beat the specificity of the built-in rules
-		// https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity
+		},
+		content_toc: function() {
+			// include `html` to beat the specificity of the built-in rules
+			// https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity
 
-		const str = `
-			/* Make the ToC pointer more visibile, remove annoyingly styled gradient */
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor::before ,
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:link::before {
-					visibility: hidden;
-				}
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor::after,
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:link::after,
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:visited::after,
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:hover::after,
-				html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:focus::after {
-					filter: invert(50%); /* basically make it gray */
-				}
+			const str = `
+				/* Make the ToC pointer more visibile, remove annoyingly styled gradient */
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor::before ,
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:link::before {
+						visibility: hidden;
+					}
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor::after,
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:link::after,
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:visited::after,
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:hover::after,
+					html .daylight #ContentModuleTree .d2l-le-TreeAccordionItem.d2l-le-TreeAccordionItem-Selected > a.d2l-le-TreeAccordionItem-anchor:focus::after {
+						filter: invert(50%); /* basically make it gray */
+					}
 
-	
-			
-		`;
+		
+				
+			`;
 
-		let style = document.createElement('style');
-		style.setAttribute('type', 'text/css');
-		style.innerHTML = str;
-		document.head.appendChild(style);
-		console.log("Installing css tweaks to: ", style);
-	},
+			let style = document.createElement('style');
+			style.setAttribute('type', 'text/css');
+			style.innerHTML = str;
+			document.head.appendChild(style);
+			console.log("Installing css tweaks to: ", style);
+		},
+	};
 };
 
 /** Traverses the DOM finding each parent element with `display: none` and toggles it off for the duration of the callback. */

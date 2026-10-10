@@ -18,7 +18,7 @@ Adds a few Quality of Life tweaks to the online educational platform Brightspace
 ## Installing:
 1. Install Tampermonkey (for [Chrome](https://chrome.google.com/webstore/detail/dhdgffkkebhmkfjojejmpbldmpobfkfo) or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)) or Greasemonkey (for [Firefox](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/))
 	* Note that this script is not actively tested to work with Firefox/Greasemonkey, though it should be largely compatible. Bugs should be raised on Github as issues or pull-requests.
-2. Open [d2l-tweaks.user.js](https://github.com/csm123199/d2l-tweaks/raw/master/d2l-tweaks.user.js)
+2. Open [d2l-tweaks.user.js](https://github.com/chrismooredev/d2l-tweaks/raw/master/d2l-tweaks.user.js)
 3. Tampermonkey/Greasemonkey should prompt you to install the script.
 	* If enabled, the script should occasionally auto-update if new versions are released.
 
@@ -34,4 +34,4 @@ Adds a few Quality of Life tweaks to the online educational platform Brightspace
 * Clone the repository
 * Run `npm install` in the repo's directory
 * Edit code, and run `tsc` to compile it. (`tsc --watch` for it to auto-compile on changes)
-* For quick iteration, you may want to install a [custom userscript](https://gist.github.com/csm123199/bdb49c7bd5973f99a41bb8532d34f055/raw/2bc4a93af6320abe0ff9642ee8813b3316fe87d9/test-d2l-tweaks.user.js) that loads the project from disk. (Change the path after the `@require`)
+* For quick iteration, you may want to install a [custom userscript](https://gist.github.com/chrismooredev/bdb49c7bd5973f99a41bb8532d34f055/raw/2bc4a93af6320abe0ff9642ee8813b3316fe87d9/test-d2l-tweaks.user.js) that loads the project from disk. (Change the path after the `@require`)
